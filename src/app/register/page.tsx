@@ -2,33 +2,25 @@
 
 import { useState } from "react";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleLogin = async () => {
-    const res = await fetch("/api/login", {
+  const handleRegister = async () => {
+    const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
     const data = await res.json();
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      setMessage("Login successful! Redirecting...");
-      setTimeout(() => {
-        window.location.href = "/"; // Redirect to dashboard or home
-      }, 1500);
-    } else {
-      setMessage(data.message);
-    }
+    setMessage(data.message);
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
-      <h1 className="text-2xl font-bold">Login</h1>
+      <h1 className="text-2xl font-bold">Register</h1>
       <input
         type="text"
         placeholder="Email"
@@ -43,8 +35,8 @@ export default function LoginPage() {
         onChange={(e) => setPassword(e.target.value)}
         className="border p-2 m-2"
       />
-      <button onClick={handleLogin} className="bg-green-500 text-white px-4 py-2 rounded">
-        Login
+      <button onClick={handleRegister} className="bg-blue-500 text-white px-4 py-2 rounded">
+        Register
       </button>
       {message && <p className="mt-2 text-red-500">{message}</p>}
     </div>
