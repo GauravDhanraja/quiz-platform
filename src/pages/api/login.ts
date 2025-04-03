@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "@/lib/db";
 import { RowDataPacket } from "mysql2";
+import { serialize } from "cookie";
 
 interface User extends RowDataPacket {
   id: string;
@@ -35,17 +36,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    if (!process.env.JWT_SECRET) {
-      return res.status(500).json({ message: "JWT secret is not defined in environment variables" });
+    if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      return res.status(500).json({ message: "JWT secrets are not defined" });
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({ message: "Login successful", token });
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.setHeader("Set-Cookie", serialize("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60,
+    }));
+
+    res.status(200).json({ message: "Login successful", accessToken });
   } catch (error) {
     res.status(500).json({ message: "Database error", error: (error as Error).message });
   }

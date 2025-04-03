@@ -8,42 +8,44 @@ datasource db {
 }
 
 model users {
-  id         String       @id @unique @default(uuid())
-  email      String       @unique
-  password   String
-  name       String?
-  quizes     quiz[]
-  submission submission[]
+  id          String       @id @unique @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  quizes      quiz[]
+  submissions submission[]
 }
 
 model quiz {
   id        Int        @id @default(autoincrement())
+  quizID    Int        @unique
   title     String
+  password  String
   createdAt DateTime   @default(now())
   startTime DateTime
   endTime   DateTime
   published Boolean    @default(false)
   closed    Boolean    @default(false)
   userId    String
-  publisher users      @relation(fields: [userId], references: [id])
+  publisher users      @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions question[]
 
   @@index([userId])
 }
 
 model question {
-  id       String    @id @default(cuid())
+  id       String   @id @default(cuid())
   quizId   Int
-  quiz     quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz     quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   question String
-  options  options[]
   points   Int
   image    String?
+  options  option[]
 
   @@index([quizId])
 }
 
-model options {
+model option {
   id          String       @id @default(cuid())
   questionId  String
   question    question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
@@ -59,7 +61,7 @@ model submission {
   userId    String
   user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
   optionId  String
-  options   options  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  option    option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

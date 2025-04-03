@@ -12,6 +12,7 @@
     "@auth/prisma-adapter": "^2.8.0",
     "@prisma/client": "^6.5.0",
     "bcryptjs": "^3.0.2",
+    "cookie": "^1.0.2",
     "dotenv": "^16.4.7",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",

@@ -1,17 +1,21 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { NextApiResponse } from "next";
+import jwt from "jsonwebtoken";
 import { NextHandler } from "next-connect";
+import { AuthenticatedRequest } from "@/types/User";
 
-interface AuthenticatedRequest extends NextApiRequest {
-  user?: JwtPayload | string;
-}
-
-export function authenticateToken(req: AuthenticatedRequest, res: NextApiResponse, next: NextHandler) {
+export function authenticateToken(
+  req: AuthenticatedRequest,
+  res: NextApiResponse,
+  next: NextHandler,
+) {
   const authHeader = req.headers.authorization;
+  console.log("Authorization Header:", authHeader);
   const token = authHeader?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Access denied, no token provided" });
+    return res
+      .status(401)
+      .json({ message: "Access denied, no token provided" });
   }
 
   try {
@@ -23,6 +27,9 @@ export function authenticateToken(req: AuthenticatedRequest, res: NextApiRespons
     req.user = decoded;
     next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expired" });
+    }
     console.error("JWT Verification Error:", error);
     res.status(403).json({ message: "Invalid token" });
   }

@@ -20,16 +20,16 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-cols-4 items-center justify-items-center min-h-screen bg-slate-200">
-      <main className="flex flex-col col-start-2 col-span-2 w-full items-center justify-items-center">
+    <div className="grid grid-cols-6 items-center justify-items-center min-h-screen bg-slate-200">
+      <main className="flex flex-col col-start-3 col-span-2 w-full items-center justify-items-center py-8 px-14 rounded-4xl bg-white/80 shadow-2xl">
         {isLoggedIn ? (
-          <div className="flex flex-col space-y-8 justify-items-center">
+          <div className="flex flex-col w-full space-y-8 justify-items-center">
             <Link href="/create-quiz" className="flex justify-center">
               <button className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-semibold">
                 Create a Quiz
               </button>
             </Link>
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col w-full space-y-4">
               <input
                 type="text"
                 placeholder="Enter Quiz ID"
@@ -53,18 +53,23 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-8 justify-center items-center">
-            <div className="col-span-1 flex items-center justify-center py-3 px-4 bg-blue-500 rounded-3xl">
+          <div className="flex flex-col">
+            <h1 className="text-black text-4xl font-bold mb-4">
+              Login to Create or Join Quiz
+            </h1>
+            <div className="grid grid-cols-2 gap-8 mt-4 justify-center items-center">
               <Link href="/login" className="text-white text-xl font-semibold">
-                Login
+                <div className="col-span-1 flex items-center justify-center py-3 px-4 bg-blue-500 rounded-3xl">
+                  Login
+                </div>
               </Link>
-            </div>
-            <div className="col-span-1 flex items-center justify-center py-3 px-4 bg-blue-500 rounded-3xl">
               <Link
                 href="/register"
                 className="text-white text-xl font-semibold"
               >
-                Register
+                <div className="col-span-1 flex items-center justify-center py-3 px-4 bg-blue-500 rounded-3xl">
+                  Register
+                </div>
               </Link>
             </div>
           </div>

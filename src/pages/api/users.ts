@@ -1,22 +1,45 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import pool from "@/lib/db";
-import User from "@/types/User";
-import { RowDataPacket } from "mysql2";
+import { NextApiResponse } from "next";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { NextHandler } from "next-connect";
+import { AuthenticatedRequest } from "@/types/User";
 
-export default async function handler(
-  req: NextApiRequest,
+export function authenticateToken(
+  req: AuthenticatedRequest,
   res: NextApiResponse,
+  next: NextHandler,
 ) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+  const authHeader = req.headers.authorization;
+  console.log("Authorization Header:", authHeader);
+  const token = authHeader?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied, no token provided" });
   }
 
   try {
-    const [rows] = await pool.query<User[] & RowDataPacket[]>(
-      "SELECT * FROM users",
-    );
-    res.status(200).json(rows);
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT secret is missing in environment variables");
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload & {
+      userId: string;
+    };
+    req.user = decoded;
+
+    console.log("Decoded Token:", decoded);
+
+    if (!decoded.userId) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
+
+    next();
   } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expired" });
+    }
+    console.error("JWT Verification Error:", error);
+    res.status(403).json({ message: "Invalid token" });
   }
 }

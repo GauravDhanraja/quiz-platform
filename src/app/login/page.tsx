@@ -16,8 +16,8 @@ export default function LoginPage() {
     });
 
     const data = await res.json();
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    if (data.accessToken) {
+      localStorage.setItem("token", data.accessToken);
       setMessage("Login successful! Redirecting...");
       setTimeout(() => {
         window.location.href = "/";
@@ -52,7 +52,9 @@ export default function LoginPage() {
         >
           Login
         </button>
-        <Link href="/register" className="text-xl font-medium text-blue-600">Register instead?</Link>
+        <Link href="/register" className="text-xl font-medium text-blue-600">
+          Register instead?
+        </Link>
       </div>
     </div>
   );
