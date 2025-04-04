@@ -2,20 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [quizId, setQuizId] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+      console.log("User token found:", token);
+    }
   }, []);
 
   const handleJoinQuiz = () => {
     if (quizId && password) {
-      window.location.href = `/quiz/${quizId}?password=${password}`;
+      const encodedPassword = encodeURIComponent(password);
+      const url = `/${quizId}?password=${encodedPassword}`;
+      console.log("Navigating to:", url);
+      router.push(url);
+    } else {
+      console.warn("Both quizId and password are required to redirect");
     }
   };
 

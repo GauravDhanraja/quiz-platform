@@ -29,7 +29,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const newAccessToken = jwt.sign(
       { userId: decoded.userId },
       process.env.JWT_SECRET as string,
-      { expiresIn: "15m" },
+      { expiresIn: "1d" },
     );
 
     res.status(200).json({ accessToken: newAccessToken });

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/lib/api";
 
 type Question = {
@@ -19,7 +18,6 @@ export default function CreateQuiz() {
     { text: "", options: ["", "", "", ""], answer: 0 },
   ]);
   const [message, setMessage] = useState<string>("");
-  const router = useRouter();
 
   const handleCreateQuiz = async () => {
     setMessage("");
@@ -43,7 +41,6 @@ export default function CreateQuiz() {
     }
 
     setMessage("Quiz created successfully!");
-    router.push(`/quiz/${data.quizId}`);
   };
 
   const handleAddQuestion = () => {

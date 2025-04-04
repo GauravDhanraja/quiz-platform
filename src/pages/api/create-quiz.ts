@@ -41,15 +41,22 @@ export default async function handler(
 
       for (const question of questions) {
         const questionId = uuidv4();
+
         await connection.query(
-          "INSERT INTO question (id, quiz_id, text, correct_answer) VALUES (?, ?, ?, ?)",
-          [questionId, quizId, question.text, question.answer],
+          "INSERT INTO questions (id, quizId, question) VALUES (?, ?, ?)",
+          [questionId, quizId, question.text],
         );
 
         for (let i = 0; i < question.options.length; i++) {
           await connection.query(
-            "INSERT INTO option (question_id, option_text, option_index) VALUES (?, ?, ?)",
-            [questionId, question.options[i], i],
+            "INSERT INTO options (id, questionId, optionText, optionIndex, isCorrect) VALUES (?, ?, ?, ?, ?)",
+            [
+              uuidv4(),
+              questionId,
+              question.options[i],
+              i,
+              question.answer === i,
+            ],
           );
         }
       }

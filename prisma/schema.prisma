@@ -17,41 +17,41 @@ model users {
 }
 
 model quiz {
-  id        Int        @id @default(autoincrement())
-  quizID    Int        @unique
+  id        Int         @id @default(autoincrement())
+  quizId    Int         @unique
   title     String
   password  String
-  createdAt DateTime   @default(now())
+  createdAt DateTime    @default(now())
   startTime DateTime
   endTime   DateTime
-  published Boolean    @default(false)
-  closed    Boolean    @default(false)
+  closed    Boolean     @default(false)
   userId    String
-  publisher users      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questions question[]
+  publisher users       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions questions[]
 
   @@index([userId])
 }
 
-model question {
-  id       String   @id @default(cuid())
+model questions {
+  id       String    @id @default(cuid())
   quizId   Int
-  quiz     quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz     quiz      @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
   question String
-  points   Int
-  image    String?
-  options  option[]
+  points   Int       @default(1)
+  options  options[]
+  submissions submission[]
 
   @@index([quizId])
 }
 
-model option {
+model options {
   id          String       @id @default(cuid())
   questionId  String
-  question    question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  value       String
-  isAnswer    Boolean      @default(false)
-  submissions submission[]
+  question    questions    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionText  String
+  optionIndex Int
+  isCorrect    Boolean      @default(false)
+  submission  submission[]
 
   @@index([questionId])
 }
@@ -60,11 +60,12 @@ model submission {
   id        String   @id @default(cuid())
   userId    String
   user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    questions    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   optionId  String
-  option    option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  option    options  @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([optionId])
+  @@unique([userId, questionId])
 }

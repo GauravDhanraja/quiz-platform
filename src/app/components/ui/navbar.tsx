@@ -35,7 +35,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="absolute w-full bg-blue-500 p-4 text-white">
+    <nav className="absolute w-full bg-blue-500 p-3 text-white">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-3xl font-bold">
           QuizVerse
