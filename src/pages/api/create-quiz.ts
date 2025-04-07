@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { authenticateToken } from "@/lib/auth";
 import { AuthenticatedRequest } from "@/types/User";
+import { RowDataPacket } from "mysql2/promise";
+
+interface QuizRow extends RowDataPacket {
+  quizId: string;
+}
 
 export default async function handler(
   req: AuthenticatedRequest,
@@ -20,9 +25,9 @@ export default async function handler(
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { title, password, startTime, endTime, questions } = req.body;
+    const { title, password, questions } = req.body;
 
-    if (!title || !password || !startTime || !endTime || !questions.length) {
+    if (!title || !password || !questions.length) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -34,9 +39,20 @@ export default async function handler(
 
       await connection.beginTransaction();
 
+      const [existing] = (await connection.query(
+        "SELECT quizId FROM quiz WHERE userId = ?",
+        [userId],
+      )) as unknown as [QuizRow[]];
+
+      if (existing.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "You already have an active quiz." });
+      }
+
       await connection.query(
-        "INSERT INTO quiz (quizId, title, password, startTime, endTime, userId) VALUES (?, ?, ?, ?, ?, ?)",
-        [quizId, title, hashedPassword, startTime, endTime, userId],
+        "INSERT INTO quiz (quizId, title, password, userId) VALUES (?, ?, ?, ?)",
+        [quizId, title, hashedPassword, userId],
       );
 
       for (const question of questions) {
@@ -62,7 +78,9 @@ export default async function handler(
       }
 
       await connection.commit();
-      res.status(201).json({ message: "Quiz created successfully", quizId });
+      res
+        .status(201)
+        .json({ message: "Quiz created successfully", quizId, password });
     } catch (error) {
       console.error(error);
       await connection.rollback();

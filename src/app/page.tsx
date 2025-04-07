@@ -8,24 +8,23 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [quizId, setQuizId] = useState("");
   const [password, setPassword] = useState("");
+  const [hasQuiz, setHasQuiz] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token");
-      setIsLoggedIn(!!token);
-      console.log("User token found:", token);
-    }
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+    const storedQuizId = localStorage.getItem("quizId");
+    setHasQuiz(!!storedQuizId);
   }, []);
 
   const handleJoinQuiz = () => {
     if (quizId && password) {
       const encodedPassword = encodeURIComponent(password);
       const url = `/${quizId}?password=${encodedPassword}`;
-      console.log("Navigating to:", url);
       router.push(url);
     } else {
-      console.warn("Both quizId and password are required to redirect");
+      alert("Quiz ID and password are required");
     }
   };
 
@@ -36,7 +35,7 @@ export default function Home() {
           <div className="flex flex-col w-full space-y-8 justify-items-center">
             <Link href="/create-quiz" className="flex justify-center">
               <button className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-semibold">
-                Create a Quiz
+                {hasQuiz ? "View Quiz" : "Create a Quiz"}
               </button>
             </Link>
             <div className="flex flex-col w-full space-y-4">
@@ -82,6 +81,7 @@ export default function Home() {
                 </div>
               </Link>
             </div>
+            <div></div>
           </div>
         )}
       </main>

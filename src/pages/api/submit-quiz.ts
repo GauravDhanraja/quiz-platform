@@ -19,23 +19,9 @@ export default async function handler(
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { answers, quizId } = req.body;
-    console.log(req.body);
-
+    const { answers } = req.body;
     if (!answers || Object.keys(answers).length === 0) {
       return res.status(400).json({ message: "Answers are required" });
-    }
-
-    // Check if the user has already submitted this quiz
-    const [existingSubmission] = await pool.query(
-      "SELECT * FROM submission WHERE userId = ? AND quizId = ?",
-      [userId, quizId],
-    );
-
-    if (existingSubmission.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "You have already submitted this quiz." });
     }
 
     const connection = await pool.getConnection();
@@ -43,21 +29,37 @@ export default async function handler(
     try {
       await connection.beginTransaction();
 
+      let correctAnswers = 0;
+      const totalQuestions = Object.keys(answers).length;
+
       const submissionPromises = Object.entries(answers).map(
         async ([questionId, optionId]) => {
           const submissionId = uuidv4();
 
+          const [rows] = (await connection.query(
+            "SELECT isCorrect FROM options WHERE id = ?",
+            [optionId],
+          )) as unknown as [Array<{ isCorrect: number }>];
+
+          if (rows.length > 0 && rows[0].isCorrect) {
+            correctAnswers++;
+          }
+
           await connection.query(
-            "INSERT INTO submission (id, userId, quizId, questionId, optionId) VALUES (?, ?, ?, ?, ?)",
-            [submissionId, userId, quizId, questionId, optionId],
+            "INSERT INTO submission (id, userId, questionId, optionId) VALUES (?, ?, ?, ?)",
+            [submissionId, userId, questionId, optionId],
           );
         },
       );
 
       await Promise.all(submissionPromises);
-
       await connection.commit();
-      res.status(200).json({ message: "Submission successful!" });
+
+      res.status(200).json({
+        message: "Submission successful!",
+        correctAnswers,
+        totalQuestions,
+      });
     } catch (error) {
       console.error(error);
       await connection.rollback();

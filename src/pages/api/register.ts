@@ -18,12 +18,11 @@ export default async function handler(
   }
 
   try {
-    const existingUser = await pool.query(
-      "SELECT id FROM users WHERE email = ?",
-      [email],
-    );
+    const [rows] = (await pool.query("SELECT * FROM users WHERE email = ?", [
+        email,
+    ])) as unknown as [Array<{ email: string }>];
 
-    if (existingUser.length > 0) {
+    if (rows.length > 0) {
       return res.status(400).json({ message: "Email is already registered" });
     }
 

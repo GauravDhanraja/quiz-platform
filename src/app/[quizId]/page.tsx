@@ -16,9 +16,9 @@ interface Question {
 }
 
 export default function AttemptQuiz() {
-  const { quizId } = useParams();
+  const { quizId } = useParams() as { quizId: string };
   const searchParams = useSearchParams();
-  const password = searchParams.get("password");
+  const password = searchParams!.get("password");
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [title, setTitle] = useState("");
@@ -27,7 +27,11 @@ export default function AttemptQuiz() {
   >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false); // Track submission status
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [score, setScore] = useState<{ correct: number; total: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!quizId || !password) return;
@@ -87,12 +91,11 @@ export default function AttemptQuiz() {
         }),
       });
 
-      console.log(selectedAnswers);
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Unknown error");
 
       setIsSubmitted(true);
+      setScore({ correct: data.correctAnswers, total: data.totalQuestions });
       alert("Submission successful!");
     } catch (err) {
       console.error("Error submitting quiz:", err);
@@ -114,7 +117,7 @@ export default function AttemptQuiz() {
         {questions.map((q, idx) => (
           <div
             key={q.id}
-            className="mb-6 p-4 rounded-3xl bg-white/80 shadow-2xl"
+            className="mb-6 p-4 rounded-3xl bg-white/80 shadow-xl"
           >
             <h2 className="text-lg text-black font-semibold mb-2">
               {idx + 1}. {q.question}
@@ -148,6 +151,15 @@ export default function AttemptQuiz() {
             >
               Submit Quiz
             </button>
+          </div>
+        )}
+
+        {isSubmitted && score && (
+          <div className="mt-8 text-center bg-slate-200 text-black">
+            <h3 className="text-xl font-bold">
+              Quiz Submitted Successfully! Score: {score.correct} /{" "}
+              {score.total}
+            </h3>
           </div>
         )}
 

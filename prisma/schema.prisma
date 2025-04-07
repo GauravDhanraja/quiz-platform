@@ -21,9 +21,6 @@ model quiz {
   quizId    Int         @unique
   title     String
   password  String
-  createdAt DateTime    @default(now())
-  startTime DateTime
-  endTime   DateTime
   closed    Boolean     @default(false)
   userId    String
   publisher users       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -33,12 +30,12 @@ model quiz {
 }
 
 model questions {
-  id       String    @id @default(cuid())
-  quizId   Int
-  quiz     quiz      @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
-  question String
-  points   Int       @default(1)
-  options  options[]
+  id          String       @id @default(cuid())
+  quizId      Int
+  quiz        quiz         @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
+  question    String
+  points      Int          @default(1)
+  options     options[]
   submissions submission[]
 
   @@index([quizId])
@@ -50,22 +47,23 @@ model options {
   question    questions    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   optionText  String
   optionIndex Int
-  isCorrect    Boolean      @default(false)
+  isCorrect   Boolean      @default(false)
   submission  submission[]
 
   @@index([questionId])
 }
 
 model submission {
-  id        String   @id @default(cuid())
-  userId    String
-  user      users    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questionId  String
-  question    questions    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  optionId  String
-  option    options  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  userId     String
+  user       users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId   String
+  option     options   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  score      Int       @default(0)
 
+  @@unique([userId, questionId])
   @@index([userId])
   @@index([optionId])
-  @@unique([userId, questionId])
 }
